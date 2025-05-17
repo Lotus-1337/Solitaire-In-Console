@@ -1,4 +1,4 @@
-﻿#include <random>
+#include <random>
 #include <iostream>
 
 #include "solitaire.h"
@@ -30,12 +30,24 @@
 
 float absoluteValue(float number);
 
+
+Solitaire::Solitaire(int cardsWidth, int cardsHeight)
+{
+
+	cardWidth = cardsWidth;
+	cardHeight = cardsHeight;
+
+	columns = 7;
+	rows = cardHeight + columns;
+
+	totalDeckLength = columns * cardWidth;
+}
+
+
 void Solitaire::randomizeDeck()
 {
 	int howManyCardsInTotal = 52;
 	int howManyDifferentSuits = 4;
-
-	int columns = 7;
 
 	std::random_device rd;
 	std::uniform_int_distribution<int> dist(0, howManyCardsInTotal - 1);
@@ -45,7 +57,7 @@ void Solitaire::randomizeDeck()
 	for (int i = 0; i < howManyCardsInTotal; i++)
 	{
 
-		Card Card1;
+		Card Card1(cardWidth, cardHeight);
 		Card1.cardValue = placeholderValue; 
 		Card1.isHidden = true;
 
@@ -149,24 +161,15 @@ void Solitaire::randomizeDeck()
 void Solitaire::drawDeck()
 {
 
-	int cardWidth = 5;
-	int cardHeight = 5;
-
-	int columns = 7;
-	int rows = cardHeight + columns;
-
 	int howManyDifferentSuits = 4;
-	
-	int totalDeckLength = columns * cardWidth;
 
-
-	Card HiddenCard;
+	Card HiddenCard(cardWidth, cardHeight);
 	HiddenCard.isHidden = true;
 
-	Card FundationPileCard;
+	Card FundationPileCard(cardWidth, cardHeight);
 	std::vector<class Card> FundationCards;
 
-	
+	std::vector<bool> ShouldCardBeDrawn = { 1, 1, 1, 1, 1, 1, 1 };
 
 	for (int i = 0; i < howManyDifferentSuits; i++)
 	{
@@ -183,11 +186,14 @@ void Solitaire::drawDeck()
 
 		Stacks.back().back().isHidden = false;
 
-		Stacks.back().back().drawCard(i, false);
+		Stacks.back().back().drawCard(false);
+
+		Stacks.back().back().whichPartOfCard++;
 
 		std::wcout << L' ';
 
-		HiddenCard.drawCard(i, false);
+		HiddenCard.drawCard(false);
+		HiddenCard.whichPartOfCard++;
 
 		for (int j = 0; j < totalDeckLength; j++)
 		{
@@ -196,7 +202,8 @@ void Solitaire::drawDeck()
 
 		for (int j = 0; j < 4; j++)
 		{
-			FundationCards[j].drawCard(i, true);
+			FundationCards[j].drawCard(true);
+			FundationCards[j].whichPartOfCard++;
 		}
 
 
@@ -205,6 +212,7 @@ void Solitaire::drawDeck()
 	}
 	
 	std::wcout << L"\n\n";
+
 
 	for (int row = 0; row < rows; row++)
 	{
@@ -216,37 +224,35 @@ void Solitaire::drawDeck()
 		}
 
 		int cardPart = 0;
+		
 
 		for (int column = 0; column < columns; column++)
 		{
-			
-			
-			int currentCardIndex;
 
-			if (Stacks[column].size() > row || Stacks[column].size() > row - cardPart)
+			int currentCardIndex = 0;
+
+			if (Stacks[column].size() > currentCardIndex)
 			{
+
+				cardPart = currentCard.whichPartOfCard; // line 29 "#define currentCard Stacks[column][currentCardIndex]"
 
 				currentCardIndex = row - cardPart;
 
 				currentCardIndex = absoluteValue(currentCardIndex);
-
-				cardPart = Stacks[column][currentCardIndex].whichPartOfCard;
-
-				//std::wcout << Stacks[column][currentCardIndex].isHidden << L'\n';
-
-				Stacks[column][currentCardIndex].drawCard(cardPart, false);
-				if (Stacks[column][currentCardIndex].isOnTopOfStack)
+				
+				if (currentCardIndex > Stacks[column].size() - 1)
 				{
-					cardPart++;
+					currentCardIndex = Stacks[column].size() - 1;
+
 				}
 				
-			}
-			else
-			{
-				for (int i = 0; i < cardHeight; i++)
+				currentCard.drawCard(false);
+
+				if (currentCard.isOnTopOfStack && row < currentCardIndex + cardHeight)
 				{
-					std::wcout << L' ';
+					currentCard.whichPartOfCard++;
 				}
+
 			}
 
 			if (columns - column <= 1)
@@ -254,14 +260,24 @@ void Solitaire::drawDeck()
 				std::wcout << L'\n';
 			}
 
-
 		}
 
 	}
 	
 }
 
-void Card::drawCard(int whichPartOfCard, bool isInFundationPile)
+void Solitaire::drawCursor(int x)
+{
+	
+	for (int i = 0; i < x * (cardWidth - 1); i++)
+	{
+		std::wcout << L' ';
+	}
+
+
+}
+
+void Card::drawCard(bool isInFundationPile)
 {
 
 	wchar_t valueSymbol;
@@ -276,7 +292,7 @@ void Card::drawCard(int whichPartOfCard, bool isInFundationPile)
 
 			valueSymbol = getValueSymbol();
 
-			if (valueSymbol == '10')
+			if (int(valueSymbol) == 10)
 			{
 				spaces = 0;
 			}
@@ -340,6 +356,15 @@ void Card::drawCard(int whichPartOfCard, bool isInFundationPile)
 			case 4:
 				std::wcout << leftDownCorner << horizontalLines << horizontalLines << horizontalLines << rightDownCorner;
 				break;
+
+			default:
+				for (int i = 0; i < cardWidth; i++)
+				{
+					std::wcout << L' ';
+				}
+
+				break;
+
 			}
 		}
 		else {
@@ -451,13 +476,16 @@ wchar_t Card::getValueSymbol()
 
 }
 
-Card::Card()
+Card::Card(int cardsWidth, int cardsHeight)
 {
 	
 	isUncovered = false;
 	isHidden = true;
 	isOnTopOfStack = false;
 	whichPartOfCard = 0;
+
+	cardWidth = cardsWidth;
+	cardHeight = cardsHeight;
 
 }
 
@@ -472,3 +500,4 @@ float absoluteValue(float number)
 		return -number;
 	}
 }
+
