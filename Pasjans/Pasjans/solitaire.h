@@ -28,10 +28,13 @@ class Card
 
 		int cardValue;
 		int whichPartOfCard;
+
+		int cardHeight;
+		int cardWidth;
 		
 		Suit CardsSuit;
 
-		void drawCard(int whichPartOfCard, bool isInFundationPile);
+		void drawCard(bool isInFundationPile);
 
 		wchar_t getSuitSymbol();
 		wchar_t getValueSymbol();
@@ -40,29 +43,41 @@ class Card
 		
 	public:
 
+		Card(int cardsWidth, int cardsHeight);
+
 		void placeCard();
 
-		Card();
 
 };
 
 class Solitaire
 {
 
-	public: 
+	friend class Card;
 
-		void randomizeDeck();
+	private: 
 
-		bool checkOrder(Card &Card1);
+		int columns;
+		int rows;
+		int totalDeckLength;
+
+		int cardWidth;
+		int cardHeight;
 
 		std::vector<class Card> CardsOrder;
 
 		std::array<int, 4> HowManyCardsOfSuit = { 13, 13, 13, 13 };
 
-		void drawDeck();
-
-		int totalDeckLength;
-
 		std::vector<std::vector<class Card>> Stacks;
+
+	public:
+
+		Solitaire(int cardsWidth, int cardsHeight);
+
+		void randomizeDeck();
+
+		bool checkOrder(Card &Card1);
+		
+		void drawDeck();
 
 };
