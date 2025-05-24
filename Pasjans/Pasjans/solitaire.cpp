@@ -1,13 +1,6 @@
 #include <random>
-#include <iostream>
 
 #include "solitaire.h"
-
-#define currentCard Stacks[column][currentCardIndex]
-
-#define cursorPointer L'\u2191'
-#define cursorLeftSide L'\u207D'
-#define cursorRightSide L'\u207E'
 
 #define verticalCursor L'\u2192'
 
@@ -30,6 +23,7 @@ Solitaire::Solitaire(int cardsWidth, int cardsHeight)
 	didPlayerPickUpCard = false;
 
 	cursorPositionX = (columns - 1) / 2;
+	cursorPositionY = 0;
 
 	howManyDifferentSuits = 4;
 
@@ -65,7 +59,6 @@ void Solitaire::randomizeDeck()
 		while (CardsOrder[randomNumber].cardValue != placeholderValue)
 		{
 			randomNumber = dist(rd);
-			//std::wcout << L"Skibidi \n" << randomNumber << L'\n';
 		}
 
 		CardsOrder[i].cardValue = randomNumber % 13;
@@ -151,6 +144,8 @@ void Solitaire::randomizeDeck()
 void Solitaire::drawDeck()
 {
 
+	#define currentCard Stacks[column][currentCardIndex]
+
 	int howManyDifferentSuits = 4;
 
 	int totalLengthOfIndentationInSpaces;
@@ -161,10 +156,10 @@ void Solitaire::drawDeck()
 	Card FundationPileCard(cardWidth, cardHeight);
 	std::vector<class Card> FundationCards;
 
-	std::vector<bool> ShouldCardBeDrawn = { 1, 1, 1, 1, 1, 1, 1 };
 
 	for (int i = 0; i < howManyDifferentSuits; i++)
 	{
+
 		FundationPileCard.isHidden = true;
 		FundationPileCard.isOnTopOfStack = true;
 		FundationPileCard.whichPartOfCard = 0;
@@ -173,6 +168,21 @@ void Solitaire::drawDeck()
 		FundationCards.push_back(FundationPileCard);
 
 		FundationStack.push_back(FundationCards);
+
+	}
+
+	for (int i = 0; i < Stacks.size(); i++)   // all the cards except for the ones on top are not on top of the stack anymore
+	{
+
+		for (int j = 0; j < Stacks[i].size(); j++)
+		{
+
+			Stacks[i][j].isOnTopOfStack = false;
+
+		}
+
+		Stacks[i].back().isOnTopOfStack = true;
+		Stacks[i].back().whichPartOfCard = 0;
 
 	}
 
@@ -207,12 +217,7 @@ void Solitaire::drawDeck()
 
 	}
 
-	Stacks.back().back().whichPartOfCard = 0;
-	
-	for (int i = 0; i < Stacks.size(); i++)
-	{
-		Stacks[i].back().whichPartOfCard = 0;
-	}
+	Stacks.back().back().whichPartOfCard = 0; 
 
 	for (int i = 0; i < FundationStack.size(); i++)
 	{
@@ -227,13 +232,14 @@ void Solitaire::drawDeck()
 
 		bool hasVerticalCursBeenDrawn = false;
 
-		if (cursorPositionY == rows - row)
+		if (cursorPositionY == rows - row - 1)
 		{
 			std::wcout << verticalCursor;
 			hasVerticalCursBeenDrawn = true;
 		}
 		
-		totalLengthOfIndentationInSpaces = cardWidth * 2 + 1 - hasVerticalCursBeenDrawn;
+		totalLengthOfIndentationInSpaces = cardWidth * 2 + 1 - hasVerticalCursBeenDrawn;   // subtracting 0 (when cursor was not drawn) or 1 (when it was drawn)
+																						   // from the amount of spaces needed to indent the cards
 
 		for (int i = 0; i < totalLengthOfIndentationInSpaces; i++)
 		{
@@ -251,27 +257,37 @@ void Solitaire::drawDeck()
 			if (Stacks[column].size() > currentCardIndex)
 			{
 
-				cardPart = currentCard.whichPartOfCard; // line 29 "#define currentCard Stacks[column][currentCardIndex]"
 
-				currentCardIndex = row - cardPart;
+
+				cardPart = currentCard.whichPartOfCard; // line 147 "#define currentCard Stacks[column][currentCardIndex]"
+
+				currentCardIndex = row - cardPart;		// current card index is sort of a shortcut 
 
 				currentCardIndex = absoluteValue(currentCardIndex);
-				
+
 				if (currentCardIndex > Stacks[column].size() - 1)
 				{
 					currentCardIndex = Stacks[column].size() - 1;
 
 				}
-				
+
 				currentCard.drawCard();
 
-				if (currentCard.isOnTopOfStack && row < currentCardIndex + cardHeight)
+				if (currentCard.isOnTopOfStack )//&& row < currentCardIndex + cardHeight)
 				{
 					currentCard.whichPartOfCard++;
 				}
 
 			}
 
+			else
+			{
+				drawIndentation();
+				//std::wcout << L"dupa";
+			}
+
+			//std::wcout << currentCard.whichPartOfCard << L' ' << cardHeight;
+	
 			if (columns - column <= 1)
 			{
 				std::wcout << L'\n';
@@ -281,25 +297,48 @@ void Solitaire::drawDeck()
 
 		if (row == rows - 1)
 		{
-			if (didPlayerPickUpCard)
+
+			drawCursor();
+
+			
+			if (PickedUpCards.size() == 0)
 			{
-				for (int i = 0; i < PickedUpCards.size(); i++)
-				{
-					PickedUpCards[i].drawCard();
-				}
-				
+
+				drawIndentation();
+			
 			}
 			else
 			{
-				for (int i = 0; i < cardWidth; i++)
+
+				for (int i = 0; i < PickedUpCards.size(); i++)
 				{
-					std::wcout << L' ';
+					PickedUpCards[i].drawCard();
+					std::wcout << L'\n';
 				}
+
 			}
 
-			drawCursor();
+			
 			break;
 		}
+
+	}
+
+															
+	// PURE DEBUGGING
+	// DELETE AFTER THE CODE WORKS FINE
+
+	// PLEASE WORK
+
+	std::wcout << PickedUpCards.size() << L' ';
+	for (int i = 0; i < Stacks[cursorPositionX - 2].size(); i++)
+	{
+
+		if (Stacks.size() >= cursorPositionX - 2 && Stacks[cursorPositionX - 2].size() > 0)
+		{
+			std::wcout << Stacks[cursorPositionX - 2][i].cardValue << L' ';
+		}
+		
 
 	}
 
@@ -311,10 +350,6 @@ bool Solitaire::getInput()			// returning whether the input has been received
 
 	int movingDirectionX = 0;
 	int movingDirectionY = 0;
-
-	int pickOrMoveCard = 0;
-
-	
 	
 	if (GetKeyState(VK_RIGHT) & 0x8000 || GetKeyState('D') & 0x8000) 
 	{
@@ -335,16 +370,15 @@ bool Solitaire::getInput()			// returning whether the input has been received
 
 	else if (GetKeyState(VK_RETURN) & 0x8000 || GetKeyState(VK_SPACE) & 0x8000)
 	{
-		if (pickOrMoveCard % 2 == 0)
+		if (PickedUpCards.size() == 0)
 		{
-
 			pickCard(cursorPositionX);
 			didPlayerPickUpCard = true;
 		}
 		else
 		{
-			didPlayerPickUpCard = false;
 			moveCard(cursorPositionX);
+			didPlayerPickUpCard = false;
 		}
 
 		return true; 
@@ -353,7 +387,7 @@ bool Solitaire::getInput()			// returning whether the input has been received
 
 	moveCursor(movingDirectionX, movingDirectionY);
 
-	if (movingDirectionX != 0 && movingDirectionY != 0)
+	if (movingDirectionX != 0 || movingDirectionY != 0)
 	{
 		return true;
 	}
@@ -373,46 +407,45 @@ void Solitaire::moveCursor(int directionX, int directionY)
 		cursorPositionY += directionY;
 	}
 
-	std::wcout << cursorPositionX;
-
 }
 
 void Solitaire::pickCard(int previousStack)
 {
+	previousStack -= 2; // if position is 2, then picked card is from the 2nd stack
+						// - 2 because the cursor position can range from being under the reserve stack to the fundation stack, 
+						// reserve stack is 2 cards
 
-	if (cursorPositionX <= 0 && Stacks.back().size() > 0)
+						// also the stack of index 0 is at 2 cursorPositionX
+
+	int numberOfPickedCards = cursorPositionY;
+
+
+	if (cursorPositionX == 0 && Stacks.back().size() > 0)
 	{
-		for (int i = cursorPositionY; i > 0; i--)
-		{
-			int reserveStackSize = Stacks.back().size();
-			PickedUpCards.push_back(Stacks.back()[reserveStackSize - i]);
-		}
+		int reserveStackSize = Stacks.back().size();
+		PickedUpCards.push_back(Stacks.back().back());
 		
 		Stacks.back().pop_back();
 
 	}
-	else if (cursorPositionX >= columns && FundationStack[cursorPositionX - columns].size() > 0)
+	else if (previousStack >= columns && FundationStack[previousStack - columns].size() > 0) //picking up a card from a fundation stack
 	{
-		
-		//int fundationStackSize = FundationStack[cursorPositionX - columns].size();
-
-		//for (int i = cursorPositionY)
 		PickedUpCards.push_back(FundationStack[cursorPositionX - columns].back());
-		FundationStack[cursorPositionX - columns].pop_back();
+		FundationStack[previousStack - columns].pop_back();
 	}
 
-	else if (cursorPositionX > 0 && cursorPositionX < columns)
+	else if (previousStack > 0 && previousStack < columns) // picking up a card from one of the main stacks
 	{
-
-		previousStack -= 1; // if position is 3, then picked card is from the 3rd stack (its index is 2)
 
 		int StacksSize = Stacks[previousStack].size();
 
-		if (StacksSize > 0)
+		if (StacksSize > 0 && StacksSize >= numberOfPickedCards)
 		{
 			
-			for (int i = StacksSize; i > 0; i--)
+			for (int i = numberOfPickedCards; i > 0; i--)
 			{
+				Stacks[previousStack][StacksSize - i].isHidden = false;
+
 				PickedUpCards.push_back(Stacks[previousStack][StacksSize - i]);
 			}
 			
@@ -423,29 +456,63 @@ void Solitaire::pickCard(int previousStack)
 	for (int i = 0; i < PickedUpCards.size(); i++)
 	{
 		PickedUpCards[i].whichPartOfCard = 0;
+		PickedUpCards[i].isHidden = false;
+		PickedUpCards[i].isOnTopOfStack = false;
 	}
 	
 }
 
 void Solitaire::moveCard(int nextStack)
 {
+	
+	nextStack -= 2;
 
-	for (int i = 0; i < PickedUpCards.size(); i++)
+	if (nextStack < columns)
 	{
-		Stacks[nextStack].push_back(PickedUpCards[i]);
+		for (int i = 0; i < PickedUpCards.size(); i++)
+		{
+
+			if (canPlaceCardInStack())
+			{
+
+				Stacks[nextStack].push_back(PickedUpCards[i]);
+
+				PickedUpCards.clear();
+
+			}
+			
+	
+		}
+	}
+	else
+	{
+
+		if (canPlaceCardInFundationStack())
+		{
+
+			int fundationStackID = nextStack - columns;
+
+			FundationStack[fundationStackID].push_back(PickedUpCards[0]);
+
+			PickedUpCards.clear();
+
+		}
+
 	}
 	
 	Stacks[nextStack].shrink_to_fit();
-
 
 }
 
 void Solitaire::drawCursor()
 {
 
+	#define cursorPointer L'\u2191'		// defining unicode chars for all the cursor parts 
+	#define cursorLeftSide L'\u207D'	// doing that for better code readability
+	#define cursorRightSide L'\u207E'
 
-	for (int i = 0; i < cursorPositionX * (cardWidth - didPlayerPickUpCard); i++)	// if player did pick it up, 
-	{																				// it will be showed in the bottom left corner, so the amount of 
+	for (int i = 0; i < (cursorPositionX - didPlayerPickUpCard) * cardWidth; i++)	// if player did pick it up, 
+	{																				// the card will be showed in the bottom left corner, so the amount of 
 		std::wcout << L' ';															// needed spaces is cardWidth less
 	}
 
@@ -461,9 +528,9 @@ bool Solitaire::isCursorPosValid(int cursorPosX, int cursorPosY)
 	int biggestValidPosX = (2 - didPlayerPickUpCard) + columns + howManyDifferentSuits;
 
 	int smallestValidPosY = 0;
-	int biggestValidPosY = columns - 1;
+	int biggestValidPosY = rows - 1;
 
-	if (cursorPosX >= smallestValidPosX && cursorPosX <= biggestValidPosX || 
+	if (cursorPosX >= smallestValidPosX && cursorPosX <= biggestValidPosX &&
 		cursorPosY >= smallestValidPosY && cursorPosY <= biggestValidPosY)
 	{
 		return true;
@@ -475,11 +542,96 @@ bool Solitaire::isCursorPosValid(int cursorPosX, int cursorPosY)
 
 }
 
-//bool Solitaire::checkOrder()
-//{
-//
-//}
+void Solitaire::drawIndentation()
+{
+	for (int i = 0; i < cardWidth; i++)
+	{
+		std::wcout << L' ';
+	}
 
+}
+
+bool Solitaire::canPlaceCardInFundationStack()
+{
+
+	if (PickedUpCards.size() == 1)
+	{
+
+		int fundationStackID = cursorPositionX - columns;
+
+		if (PickedUpCards.back().CardsSuit == fundationStackID &&
+			PickedUpCards.back().cardValue - FundationStack[fundationStackID].back().cardValue == 1
+			)
+		{
+
+			return true;
+		
+		}
+
+		else
+		{
+
+			return false;
+
+		}
+
+	}
+
+}
+
+bool Solitaire::canPlaceCardInStack()
+{
+
+	int firstCardIndex = 0;
+	int StackToPlaceCard = cursorPositionX - 2;
+
+	
+
+	if (Stacks[StackToPlaceCard].size() != 0)
+	{
+
+		int pickedCardSuit = PickedUpCards[firstCardIndex].CardsSuit;
+		int pickedCardValue = PickedUpCards[firstCardIndex].cardValue;
+
+		int lastCardInStackSuit = Stacks[StackToPlaceCard].back().CardsSuit;
+		int lastCardInStackValue = Stacks[StackToPlaceCard].back().cardValue;
+
+		if ((pickedCardSuit < 2 && lastCardInStackSuit >= 2 ||
+			pickedCardSuit >= 2 && lastCardInStackSuit < 2)					// if cards color (red or black) is != color of the last card in stack
+			&& pickedCardValue - lastCardInStackValue == 1)
+		{
+
+			return true;
+
+		}
+		else
+		{
+			return false;
+		}
+
+	}
+
+	else
+	{
+
+		int valueOfKingCard = 12;
+
+		if (PickedUpCards[firstCardIndex].cardValue == valueOfKingCard)
+		{
+
+			return true;
+
+		}
+		else
+		{
+
+			return false;
+
+		}
+
+	}
+
+}
 
 float absoluteValue(float number)
 {
