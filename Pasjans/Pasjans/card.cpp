@@ -1,14 +1,13 @@
-#include <iostream>
 
 #include "solitaire.h"
 
 
-#define heart L'\u2665'
+#define heart L'\u2665'		// defining shortcuts for all the card suits
 #define spade L'\u2660'
 #define club L'\u2663'
 #define diamond L'\u2666'
 
-#define leftTopCorner L'\u2554'
+#define leftTopCorner L'\u2554'		// defining unicode chars for all the card parts 
 #define rightTopCorner L'\u2557'
 
 #define horizontalLines L'\u2550'
@@ -124,6 +123,11 @@ void Card::drawCard()
 			{
 			case 0:
 
+				if (valueSymbol != 10)
+				{
+					spaces = horizontalLines; // an existing variable becomes horizontal lines
+				}
+
 				if (valueSymbol != L'A' && valueSymbol != L'J' && valueSymbol != L'Q' && valueSymbol != L'K')
 				{
 					std::wcout << leftTopCorner << static_cast<int>(valueSymbol) << suitSymbol << spaces << rightTopCorner;
@@ -175,15 +179,15 @@ wchar_t Card::getSuitSymbol()
 		break;
 
 	case 1:
-		suitSymbol = spade;
+		suitSymbol = diamond;
 		break;
 
 	case 2:
-		suitSymbol = club;
+		suitSymbol = spade;
 		break;
 
 	case 3:
-		suitSymbol = diamond;
+		suitSymbol = club;
 		break;
 
 	default:
