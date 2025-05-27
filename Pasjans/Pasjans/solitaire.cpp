@@ -23,7 +23,7 @@ Solitaire::Solitaire(int cardsWidth, int cardsHeight)
 	didPlayerPickUpCard = false;
 
 	cursorPositionX = (columns - 1) / 2;
-	cursorPositionY = 0;
+	cursorPositionY = rows;
 
 	howManyDifferentSuits = 4;
 
@@ -181,6 +181,7 @@ void Solitaire::drawDeck()
 
 		}
 
+		Stacks[i].back().isHidden = false;
 		Stacks[i].back().isOnTopOfStack = true;
 		Stacks[i].back().whichPartOfCard = 0;
 
@@ -232,7 +233,9 @@ void Solitaire::drawDeck()
 
 		bool hasVerticalCursBeenDrawn = false;
 
-		if (cursorPositionY == rows - row - 1)
+		int cursPosX = cursorPositionX - 2;
+
+		if (cursorPositionY == rows - row)
 		{
 			std::wcout << verticalCursor;
 			hasVerticalCursBeenDrawn = true;
@@ -254,39 +257,24 @@ void Solitaire::drawDeck()
 
 			int currentCardIndex = 0;
 
-			if (Stacks[column].size() > currentCardIndex)
+			cardPart = currentCard.whichPartOfCard; // line 147 "#define currentCard Stacks[column][currentCardIndex]"
+
+			currentCardIndex = row - cardPart;		// current card index is sort of a shortcut 
+
+			currentCardIndex = absoluteValue(currentCardIndex);
+
+			if (currentCardIndex > Stacks[column].size() - 1)
 			{
-
-
-
-				cardPart = currentCard.whichPartOfCard; // line 147 "#define currentCard Stacks[column][currentCardIndex]"
-
-				currentCardIndex = row - cardPart;		// current card index is sort of a shortcut 
-
-				currentCardIndex = absoluteValue(currentCardIndex);
-
-				if (currentCardIndex > Stacks[column].size() - 1)
-				{
-					currentCardIndex = Stacks[column].size() - 1;
-
-				}
-
-				currentCard.drawCard();
-
-				if (currentCard.isOnTopOfStack )//&& row < currentCardIndex + cardHeight)
-				{
-					currentCard.whichPartOfCard++;
-				}
+				currentCardIndex = Stacks[column].size() - 1;
 
 			}
 
-			else
-			{
-				drawIndentation();
-				//std::wcout << L"dupa";
-			}
+			currentCard.drawCard();
 
-			//std::wcout << currentCard.whichPartOfCard << L' ' << cardHeight;
+			if (currentCard.isOnTopOfStack)//&& row < currentCardIndex + cardHeight)
+			{
+				currentCard.whichPartOfCard++;
+			}
 	
 			if (columns - column <= 1)
 			{
@@ -323,25 +311,11 @@ void Solitaire::drawDeck()
 		}
 
 	}
-
 															
 	// PURE DEBUGGING
 	// DELETE AFTER THE CODE WORKS FINE
 
 	// PLEASE WORK
-
-	std::wcout << PickedUpCards.size() << L' ';
-	for (int i = 0; i < Stacks[cursorPositionX - 2].size(); i++)
-	{
-
-		if (Stacks.size() >= cursorPositionX - 2 && Stacks[cursorPositionX - 2].size() > 0)
-		{
-			std::wcout << Stacks[cursorPositionX - 2][i].cardValue << L' ';
-		}
-		
-
-	}
-
 	
 }
 
@@ -354,10 +328,12 @@ bool Solitaire::getInput()			// returning whether the input has been received
 	if (GetKeyState(VK_RIGHT) & 0x8000 || GetKeyState('D') & 0x8000) 
 	{
 		movingDirectionX = 1;
+		movingDirectionY = - 1;
 	}
 	else if (GetKeyState(VK_LEFT) & 0x8000 || GetKeyState('A') & 0x8000)
 	{
-		movingDirectionX = -1;
+		movingDirectionX = - 1;
+		movingDirectionY =  1;
 	}
 	if (GetKeyState(VK_UP) & 0x8000 || GetKeyState('W') & 0x8000)
 	{
@@ -401,10 +377,17 @@ bool Solitaire::getInput()			// returning whether the input has been received
 void Solitaire::moveCursor(int directionX, int directionY)
 {
 
-	if (isCursorPosValid(cursorPositionX + directionX, cursorPositionY + directionY))
+	if (isHorizontalCursorPosValid(cursorPositionX + directionX))
 	{
+
 		cursorPositionX += directionX;
+	}
+
+	if (isVerticalCursorPosValid(cursorPositionY + directionY))
+	{
+
 		cursorPositionY += directionY;
+
 	}
 
 }
@@ -417,7 +400,7 @@ void Solitaire::pickCard(int previousStack)
 
 						// also the stack of index 0 is at 2 cursorPositionX
 
-	int numberOfPickedCards = cursorPositionY;
+	int numberOfPickedCards = (rows + 1) - cursorPositionY;
 
 
 	if (cursorPositionX == 0 && Stacks.back().size() > 0)
@@ -444,9 +427,16 @@ void Solitaire::pickCard(int previousStack)
 			
 			for (int i = numberOfPickedCards; i > 0; i--)
 			{
-				Stacks[previousStack][StacksSize - i].isHidden = false;
 
-				PickedUpCards.push_back(Stacks[previousStack][StacksSize - i]);
+				if (!Stacks[previousStack][i].isHidden)
+				{
+
+					Stacks[previousStack].back().isHidden = false;
+
+					PickedUpCards.push_back(Stacks[previousStack][StacksSize - i]);
+				
+				}
+				
 			}
 			
 			Stacks[previousStack].pop_back();
@@ -511,7 +501,7 @@ void Solitaire::drawCursor()
 	#define cursorLeftSide L'\u207D'	// doing that for better code readability
 	#define cursorRightSide L'\u207E'
 
-	for (int i = 0; i < (cursorPositionX - didPlayerPickUpCard) * cardWidth; i++)	// if player did pick it up, 
+	for (int i = 0; i < (cursorPositionX * cardWidth) + 1; i++)	// if player did pick it up, 
 	{																				// the card will be showed in the bottom left corner, so the amount of 
 		std::wcout << L' ';															// needed spaces is cardWidth less
 	}
@@ -521,26 +511,49 @@ void Solitaire::drawCursor()
 
 }
 
-bool Solitaire::isCursorPosValid(int cursorPosX, int cursorPosY)
+bool Solitaire::isHorizontalCursorPosValid(int cursorPosX)
 {
 
 	int smallestValidPosX = 0 + didPlayerPickUpCard;
 	int biggestValidPosX = (2 - didPlayerPickUpCard) + columns + howManyDifferentSuits;
 
-	int smallestValidPosY = 0;
-	int biggestValidPosY = rows - 1;
 
-	if (cursorPosX >= smallestValidPosX && cursorPosX <= biggestValidPosX &&
-		cursorPosY >= smallestValidPosY && cursorPosY <= biggestValidPosY)
+	if (cursorPosX >= smallestValidPosX && cursorPosX <= biggestValidPosX)
 	{
+
 		return true;
 	}
+
 	else
 	{
+
 		return false;
 	}
 
+
 }
+
+bool Solitaire::isVerticalCursorPosValid(int cursorPosY)
+{
+
+	int smallestValidPosY = 0;
+	int biggestValidPosY = rows;
+
+	if (cursorPosY >= smallestValidPosY && cursorPosY <= biggestValidPosY)
+	{
+
+		return true;
+
+	}
+	else
+	{
+
+		return false;
+
+	}
+
+}
+
 
 void Solitaire::drawIndentation()
 {
@@ -596,9 +609,9 @@ bool Solitaire::canPlaceCardInStack()
 		int lastCardInStackSuit = Stacks[StackToPlaceCard].back().CardsSuit;
 		int lastCardInStackValue = Stacks[StackToPlaceCard].back().cardValue;
 
-		if ((pickedCardSuit < 2 && lastCardInStackSuit >= 2 ||
-			pickedCardSuit >= 2 && lastCardInStackSuit < 2)					// if cards color (red or black) is != color of the last card in stack
-			&& pickedCardValue - lastCardInStackValue == 1)
+		if (//(pickedCardSuit < 2 && lastCardInStackSuit >= 2 ||
+			//pickedCardSuit >= 2 && lastCardInStackSuit < 2)					// if cards color (red or black) is != color of the last card in stack
+			 pickedCardValue - lastCardInStackValue == 1)
 		{
 
 			return true;
