@@ -72,6 +72,7 @@ void Card::drawCard()
 			{
 
 			case 0:
+
 				std::wcout << leftTopCorner << horizontalLines << horizontalLines << horizontalLines << rightTopCorner;
 				break;
 
@@ -89,10 +90,12 @@ void Card::drawCard()
 				break;
 
 			case 2:
+
 				std::wcout << verticalLines << L' ' << suitSymbol << L' ' << verticalLines;
 				break;
 
 			case 3:
+
 				if (valueSymbol != L'A' && valueSymbol != L'J' && valueSymbol != L'Q' && valueSymbol != L'K')
 				{
 					std::wcout << verticalLines << L' ' << spaces << static_cast<int>(valueSymbol) << verticalLines;
@@ -105,10 +108,12 @@ void Card::drawCard()
 				break;
 
 			case 4:
+
 				std::wcout << leftDownCorner << horizontalLines << horizontalLines << horizontalLines << rightDownCorner;
 				break;
 
 			default:
+
 				for (int i = 0; i < cardWidth; i++)
 				{
 					std::wcout << L' ';
@@ -148,18 +153,22 @@ void Card::drawCard()
 		{
 
 		case 0:
+
 			std::wcout << coveredCardLeftTopCorner << coveredCardHorLine << coveredCardHorLine << coveredCardHorLine << coveredCardRightTopCorner;
 			break;
 
 		case 1: case 3:
+
 			std::wcout << coveredCardVertLine << L"   " << coveredCardVertLine;
 			break;
 
 		case 2:
+
 			std::wcout << coveredCardVertLine << L' ' << suitSymbol << L' ' << coveredCardVertLine;
 			break;
 
 		case 4:
+
 			std::wcout << coveredCardLeftDownCorner << coveredCardHorLine << coveredCardHorLine << coveredCardHorLine << coveredCardRightDownCorner;
 			break;
 		}
@@ -175,22 +184,27 @@ wchar_t Card::getSuitSymbol()
 	{
 
 	case 0:
+
 		suitSymbol = heart;
 		break;
 
 	case 1:
+
 		suitSymbol = diamond;
 		break;
 
 	case 2:
+
 		suitSymbol = spade;
 		break;
 
 	case 3:
+
 		suitSymbol = club;
 		break;
 
 	default:
+
 		suitSymbol = L' ';
 		break;
 	}
@@ -208,22 +222,27 @@ wchar_t Card::getValueSymbol()
 	{
 
 	case 0:
+
 		valueSymbol = L'A';
 		break;
 
 	case 11:
+
 		valueSymbol = L'J';
 		break;
 
 	case 12:
+
 		valueSymbol = L'Q';
 		break;
 
 	case 13:
+
 		valueSymbol = L'K';
 		break;
 
 	default:
+
 		valueSymbol = cardValue;
 
 	}
