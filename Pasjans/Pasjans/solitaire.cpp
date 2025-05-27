@@ -595,16 +595,13 @@ bool Solitaire::canPlaceCardInFundationStack()
 bool Solitaire::canPlaceCardInStack()
 {
 
-	int firstCardIndex = 0;
 	int StackToPlaceCard = cursorPositionX - 2;
-
-	
 
 	if (Stacks[StackToPlaceCard].size() != 0)
 	{
 
-		int pickedCardSuit = PickedUpCards[firstCardIndex].CardsSuit;
-		int pickedCardValue = PickedUpCards[firstCardIndex].cardValue;
+		int pickedCardSuit = PickedUpCards[0].CardsSuit;
+		int pickedCardValue = PickedUpCards[0].cardValue;
 
 		int lastCardInStackSuit = Stacks[StackToPlaceCard].back().CardsSuit;
 		int lastCardInStackValue = Stacks[StackToPlaceCard].back().cardValue;
@@ -629,7 +626,7 @@ bool Solitaire::canPlaceCardInStack()
 
 		int valueOfKingCard = 12;
 
-		if (PickedUpCards[firstCardIndex].cardValue == valueOfKingCard)
+		if (PickedUpCards[0].cardValue == valueOfKingCard)
 		{
 
 			return true;
