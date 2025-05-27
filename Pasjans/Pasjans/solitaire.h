@@ -99,7 +99,10 @@ class Solitaire
 
 		void moveCursor(int directionX, int directionY);
 		void drawCursor();
-		bool isCursorPosValid(int cursorPosX, int cursorPosY);
+
+		bool isHorizontalCursorPosValid(int cursorPosX);
+		bool isVerticalCursorPosValid(int cursorPosY);
+
 
 		void pickCard(int previousStack);
 		void moveCard(int nextStack);
