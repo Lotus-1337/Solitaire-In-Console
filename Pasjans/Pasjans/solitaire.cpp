@@ -14,7 +14,7 @@ Solitaire::Solitaire(int cardsWidth, int cardsHeight)
 	cardHeight = cardsHeight;
 
 	columns = 7;
-	rows = cardHeight + columns;
+	rows = cardHeight + 13;
 
 	totalDeckLength = columns * cardWidth;
 
@@ -428,7 +428,7 @@ void Solitaire::pickCard(int previousStack)
 			for (int i = numberOfPickedCards; i > 0; i--)
 			{
 
-				if (!Stacks[previousStack][i].isHidden)
+				if (!Stacks[previousStack][StacksSize - i].isHidden)
 				{
 
 					Stacks[previousStack].back().isHidden = false;
@@ -462,14 +462,14 @@ void Solitaire::moveCard(int nextStack)
 		for (int i = 0; i < PickedUpCards.size(); i++)
 		{
 
-			if (canPlaceCardInStack())
-			{
+			//if (canPlaceCardInStack())
+			//{
 
 				Stacks[nextStack].push_back(PickedUpCards[i]);
 
 				PickedUpCards.clear();
 
-			}
+			//}
 			
 	
 		}
@@ -554,7 +554,6 @@ bool Solitaire::isVerticalCursorPosValid(int cursorPosY)
 
 }
 
-
 void Solitaire::drawIndentation()
 {
 	for (int i = 0; i < cardWidth; i++)
@@ -573,22 +572,21 @@ bool Solitaire::canPlaceCardInFundationStack()
 		int fundationStackID = cursorPositionX - columns;
 
 		if (PickedUpCards.back().CardsSuit == fundationStackID &&
-			PickedUpCards.back().cardValue - FundationStack[fundationStackID].back().cardValue == 1
-			)
+			PickedUpCards.back().cardValue - FundationStack[fundationStackID].back().cardValue == 1)
 		{
 
 			return true;
 		
 		}
-
-		else
+		else if (PickedUpCards.back().CardsSuit == fundationStackID &&
+				FundationStack[fundationStackID].size() == 0 && PickedUpCards.back().cardValue == 0)
 		{
-
-			return false;
-
+			return true;
 		}
 
 	}
+
+	return false;
 
 }
 
@@ -597,7 +595,7 @@ bool Solitaire::canPlaceCardInStack()
 
 	int StackToPlaceCard = cursorPositionX - 2;
 
-	if (Stacks[StackToPlaceCard].size() != 0)
+	if (Stacks[StackToPlaceCard].size() > 0)
 	{
 
 		int pickedCardSuit = PickedUpCards[0].CardsSuit;
