@@ -1,0 +1,8 @@
+﻿  solitaire.cpp
+C:\Users\Albert\Documents\Kalkulator_Punktow_LSO\Pasjans\Pasjans\solitaire.cpp(40,16): warning C4066: characters beyond first in wide-character constant ignored
+C:\Users\Albert\Documents\Kalkulator_Punktow_LSO\Pasjans\Pasjans\solitaire.cpp(246,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Albert\Documents\Kalkulator_Punktow_LSO\Pasjans\Pasjans\solitaire.cpp(330,37): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Albert\Documents\Kalkulator_Punktow_LSO\Pasjans\Pasjans\solitaire.cpp(330,36): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\Albert\Documents\Kalkulator_Punktow_LSO\Pasjans\Pasjans\solitaire.cpp(334,46): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Albert\Documents\Kalkulator_Punktow_LSO\Pasjans\Pasjans\solitaire.cpp(540,18): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  Pasjans.vcxproj -> C:\Users\Albert\Documents\Kalkulator_Punktow_LSO\Pasjans\x64\Debug\Pasjans.exe
